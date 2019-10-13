@@ -1,0 +1,61 @@
+{% extends 'blog/base.html' %}
+{% block content %}
+
+<!-- POST TITLE-->
+<h1 class="posttitle loader">{{post.title}}</h1>
+
+
+
+<!-- POST TITLE -->
+<!-- Pass post through SAFE TEMPLATE FILTER in case they use any special HTML -->
+<p class="postcontent">{{post.text|safe|linebreaksbr}}</p>
+
+<!-- EDIT/DELETE POST -->
+{% if user.is_authenticated %}
+  <a class="btn btn-primary" href="{% url 'post_edit' pk=post.pk %}"><span class="fa fa-pencil"></span></a>
+  <a class="btn btn-primary" href="{% url 'post_delete' pk=post.pk %}"><span class="fa fa-remove"></span></a>
+{% endif %}
+
+<!-- POST DATE-->
+<!-- If the post has been published (has a publish date) -->
+{% if post.published_date %}
+  <div class="date postdate">
+    {{post.published_date}}
+  </div>
+{% else %}
+  <a class="btn btn-default" href="{% url 'post_publish' pk=post.pk %}">Publish</a>
+{% endif %}
+
+<hr>
+
+<!-- ADD COMMENT TO POST -->
+<a class="btn btn-primary btn-comment" href="{% url 'add_comment_to_post' pk=post.pk %}">Add Comment</a>
+
+<!-- LIST OF COMMENTS -->
+<div class="container">
+  {% for comment in post.comments.all %}
+  <br>
+    {% if user.is_authenticated or comment.approved_comment %}
+      <div class="list-group">
+
+      <li class="list-group-item">{{comment.created_date}}
+
+        {% if not comment.approved_comment %}
+          <a class="btn btn-default" href="{% url 'comment_remove' pk=comment.pk %}"><span class="fa fa-remove"></span></a>
+          <a class="btn btn-primary" href="{% url 'comment_approve' pk=comment.pk %}"><span class="fa fa-check"></span></a>
+        {% endif %}
+
+        <!-- Pass comment through safe in case they use any special HTML -->
+        <p>{{comment.text|safe|linebreaks}}</p>
+        <p>Posted By: {{comment.author}}</p>
+      </div>
+    {% endif %}
+    </li>
+    <!-- If there was nothing in the comments... -->
+    {% empty %}
+
+    <p>No Comments</p>
+
+  {% endfor %}
+</div>
+{% endblock %}
